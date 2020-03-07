@@ -1,0 +1,3 @@
+[submodule "Rota/graffitigenerator"]
+	path = Rota/graffitigenerator
+	url = git@github.com:Jugendhackt/graffitigenerator.git
