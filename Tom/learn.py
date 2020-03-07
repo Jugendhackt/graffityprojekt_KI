@@ -11,6 +11,9 @@ import random
 from tensorflow import keras
 import sys
 
+SHUFFLE_BUFFER_SIZE = 10
+BATCH_BUFFER_SIZE = 100
+
 print("TensorFlow version: {}".format(tf.__version__))
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
@@ -43,22 +46,25 @@ def LoadModels(_p, _i):
 (good_test_out, good_train_out), (good_test_in, good_train_in) = LoadModels("data/g", 1.0)
 (bad_test_out, bad_train_out), (bad_test_in, bad_train_in) = LoadModels("data/b", 0.0)
 
-print(good_test_in.shape)
+print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+print(np.append([good_train_in], [bad_train_in], axis=1))
+train = tf.data.Dataset.from_tensor_slices((np.append(good_train_in, bad_train_in), np.append(good_train_out, bad_train_out))).shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_BUFFER_SIZE)
+test = tf.data.Dataset.from_tensor_slices((np.append(good_test_in, bad_test_in), np.append(good_train_out, bad_train_out))).shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_BUFFER_SIZE)
 
-train_in = tf.convert_to_tensor(np.append(good_train_in, bad_train_in))
-train_out = tf.convert_to_tensor(np.append(good_train_out, bad_train_out))
+# print(test_in)
+# sys.exit(0)
 
-test_in = tf.convert_to_tensor(np.append(good_test_in, bad_test_in))
-test_out = tf.convert_to_tensor(np.append(good_test_out, bad_test_out))
+model = tf.keras.Sequential([
+    tf.keras.layers.Flatten(input_shape=(128, 128)),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(10)
+    ])
 
-print(test_in.shape)
-sys.exit(0)
+model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        metrics=['sparse_categorical_accuracy'])
 
-model = keras.Sequential([ keras.layers.Flatten(input_shape=(512 * 512, 1)), keras.layers.Dense(128, activation='relu'), keras.layers.Dense(10) ])
-
-model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
-
-model.fit(train_in, train_out, epochs=10)
+model.fit(train, epochs=10)
 
 test_loss, test_acc = model.evaluate(test_out,  test_in, verbose=2)
 
