@@ -19,35 +19,29 @@ print("Eager execution: {}".format(tf.executing_eagerly()))
 
 
 def LoadModels(_p, _i):
-    i = 0
-    s = 0
-
     train = []
 
     for f1 in os.listdir(str(_p)):
-        i += 1
-        if i > 50:
-            break
-
         f2 = Image.open(str(_p) + "/" + str(f1))
         f2 = f2.resize((128, 128))
         train.append(np.array(f2))
     
     print("Loaded " + str(len(train)) + " images")
     labels = [_i] * len(train)
-    print(train)
 
-    train =  np.true_divide(np.asarray(train)  , 255.0)
-    labels = np.true_divide(np.asarray(labels) , 255.0)
+    train_test =  np.divide(np.asarray(train[:50]), 255.0)
+    labels_test = np.asarray(labels[:50])
+    train_train =  np.divide(np.asarray(train[50:]), 255.0)
+    labels_train = np.asarray(labels[50:])
 
-    return (labels[:50], labels[50:]), (train[:50], train[50:])
+    return labels_test, labels_train, train_test, train_train
 
 
-(good_test_out, good_train_out), (good_test_in, good_train_in) = LoadModels("data/g", 1.0)
-(bad_test_out, bad_train_out), (bad_test_in, bad_train_in) = LoadModels("data/b", 0.0)
+good_test_out, good_train_out, good_test_in, good_train_in = LoadModels("data/g", 1.0)
+bad_test_out, bad_train_out, bad_test_in, bad_train_in = LoadModels("data/b", 0.0)
 
 print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-print(np.append([good_train_in], [bad_train_in], axis=1))
+print(np.append(good_train_in, bad_train_in, axis=0).shape)
 train = tf.data.Dataset.from_tensor_slices((np.append(good_train_in, bad_train_in), np.append(good_train_out, bad_train_out))).shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_BUFFER_SIZE)
 test = tf.data.Dataset.from_tensor_slices((np.append(good_test_in, bad_test_in), np.append(good_train_out, bad_train_out))).shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_BUFFER_SIZE)
 
