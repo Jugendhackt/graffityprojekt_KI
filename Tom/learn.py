@@ -23,9 +23,9 @@ def LoadModels(_p, _i):
     train = []
 
     for f1 in os.listdir(str(_p)):
-        if s >= 1000:
-            continue
-        s += 1
+        # if s >= 1000:
+        #     continue
+        # s += 1
 
         f2 = Image.open(str(_p) + "/" + str(f1))
         f2 = f2.resize((128, 128))
@@ -65,15 +65,24 @@ train = tf.data.Dataset.from_tensor_slices((np.append(good_train_in, bad_train_i
 test = tf.data.Dataset.from_tensor_slices((np.append(good_test_in, bad_test_in, axis=0), np.append(good_test_out, bad_test_out, axis=0))).shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_BUFFER_SIZE)
 
 
+# model = Sequential([
+#     Conv2D(16, 4, data_format='channels_last', padding='same', activation='relu', input_shape=(128, 128, 1), kernel_initializer=xavier),
+#     MaxPooling2D(),
+#     Conv2D(32, 3, padding='same', activation='relu', kernel_initializer=xavier),
+#     MaxPooling2D(),
+#     Conv2D(64, 3, padding='same', activation='relu', kernel_initializer=xavier),
+#     MaxPooling2D(),
+#     Flatten(),
+#     Dense(512, activation='none'),
+#     Dense(1, activation='none')
+#     ])
 model = Sequential([
     Conv2D(16, 4, data_format='channels_last', padding='same', activation='relu', input_shape=(128, 128, 1)),
     MaxPooling2D(),
     Conv2D(32, 3, padding='same', activation='relu'),
     MaxPooling2D(),
-    Conv2D(64, 3, padding='same', activation='relu'),
-    MaxPooling2D(),
     Flatten(),
-    Dense(512, activation='relu'),
+    Dense(128),
     Dense(1)
     ])
 
@@ -88,7 +97,7 @@ save_callback = tf.keras.callbacks.ModelCheckpoint(filepath="model/",
                                                    verbose=1)
 
 
-model.fit(train, epochs=5, callbacks=[save_callback])
+model.fit(train, epochs=10, callbacks=[save_callback])
 test_loss, test_acc = model.evaluate(test, verbose=0)
 
 print('\nTest accuracy:', test_acc)
