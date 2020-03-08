@@ -32,7 +32,7 @@ def LoadModels(_p, _i):
         train.append(np.array(f2))
     
     print("Loaded " + str(len(train)) + " images")
-    labels = [[_i, 0.9999999 - _i]] * len(train)
+    labels = [_i] * len(train)
 
     numtrain = int(len(labels) * 0.8)
 
@@ -74,7 +74,7 @@ model = Sequential([
     MaxPooling2D(),
     Flatten(),
     Dense(512, activation='relu'),
-    Dense(2)
+    Dense(1)
     ])
 
 model.summary()
